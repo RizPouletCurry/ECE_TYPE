@@ -85,3 +85,67 @@ void afficher_menu(BITMAP* buffer) {
         textprintf_centre_ex(buffer, font, 600, 300 + i * 40, color, -1, options[i]);
     }
 }
+
+
+void gerer_menu() {
+    static int old_up = 0, old_down = 0, old_enter = 0;
+
+    if (key[KEY_ESC]) {
+        etat_menu = 3;
+        return;
+    }
+
+    if (!entree_nom) {
+        if (key[KEY_DOWN] && !old_down) {
+            option_selectionnee = (option_selectionnee + 1) % NB_OPTIONS;
+        }
+        if (key[KEY_UP] && !old_up) {
+            option_selectionnee = (option_selectionnee - 1 + NB_OPTIONS) % NB_OPTIONS;
+        }
+        if (key[KEY_ENTER] && !old_enter) {
+            if (option_selectionnee == 0) {
+                entree_nom = 1;
+                memset(nom_joueur, 0, sizeof(nom_joueur));
+                index_nom = 0;
+            } else if (option_selectionnee == 1) {
+                etat_menu = 2;
+            } else if (option_selectionnee == 2) {
+                etat_menu = 3;
+            }
+        }
+
+        old_down = key[KEY_DOWN];
+        old_up = key[KEY_UP];
+        old_enter = key[KEY_ENTER];
+    }
+    else {
+        if (keypressed()) {
+            int c = readkey() & 0xff;
+
+            if (c == 13) {
+                if (attente_valid_nom) {
+                    etat_menu = 10;
+                    entree_nom = 0;
+                }
+            } else {
+                attente_valid_nom = 1;
+
+                if (c == 8 && index_nom > 0) {
+                    index_nom--;
+                    nom_joueur[index_nom] = '\0';
+                } else if (index_nom < 49 && c >= 32 && c <= 126) {
+                    nom_joueur[index_nom++] = c;
+                    nom_joueur[index_nom] = '\0';
+                }
+            }
+        }
+    }
+}
+
+int get_etat_menu() {
+    return etat_menu;
+}
+
+char* get_nom_joueur() {
+    return nom_joueur;
+}
